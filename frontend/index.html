@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alma Coin Frontend</title>
+  </head>
+  <body>
+    <h1>AlmaCoin Front End</h1>
+    <p id="connect-status">Not connected</p>
+    <button id="connect-btn">Connect Wallet</button>
+    <br />
+    <br />
+    <label for="wallet-address-input">Wallet Address:</label>
+    <input type="text" id="wallet-address-input" />
+    <button id="balance-btn">Check Balance</button>
+    <br />
+    <br />
+    <label for="recipient-address-input">Recipient Address:</label>
+    <input type="text" id="recipient-address-input" />
+    <br />
+    <label for="amount-input">Amount:</label>
+    <input type="number" id="amount-input" />
+    <button id="transfer-btn">Transfer</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+
+    <script>
+      let web3 = new Web3(Web3.givenProvider);
+
+      let contractAddress = "0x4f332fE1264E38b6c49a620D12Fce5af77D0eF80";
+      let abi = [
+        {
+          inputs: [
+            {
+              internalType: "string",
+              name: "_name",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_symbol",
+              type: "string",
+            },
+            {
+              internalType: "uint8",
+              name: "_decimals",
+              type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "_totalSupply",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "spender",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "Approval",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "Transfer",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "allowance",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_spender",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_value",
+              type: "uint256",
+            },
+          ],
+          name: "approve",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "success",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "balanceOf",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "decimals",
+          outputs: [
+            {
+              internalType: "uint8",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "name",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "symbol",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalSupply",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_value",
+              type: "uint256",
+            },
+          ],
+          name: "transfer",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "success",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_from",
+              type: "address",
+            },
+            {
+              internalType: "address",
+              name: "_to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_value",
+              type: "uint256",
+            },
+          ],
+          name: "transferFrom",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "success",
+              type: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ];
+
+      let contract = new web3.eth.Contract(abi, contractAddress);
+
+      //connect to Wallet
+      let connectBtn = document.getElementById("connect-btn");
+      let connectStatus = document.getElementById("connect-status");
+      let accounts;
+
+      connectBtn.addEventListener("click", async () => {
+        if (window.ethereum) {
+          try {
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            accounts = await web3.eth.getAccounts();
+            connectStatus.innerText = "Connected: " + accounts[0];
+          } catch (error) {
+            connectStatus.innerText = "User denied account access.";
+          }
+        } else {
+          connectStatus.innerText = "No wallet detected.";
+        }
+      });
+
+      // Check balance
+      let balanceBtn = document.getElementById("balance-btn");
+
+      balanceBtn.addEventListener("click", async () => {
+        let walletAddress = document.getElementById(
+          "wallet-address-input"
+        ).value;
+        let balance = await contract.methods.balanceOf(walletAddress).call();
+        console.log(`Balance of ${walletAddress} is = ${balance}`);
+      });
+
+      // Transfer
+
+      let transferBtn = document.getElementById("transfer-btn");
+
+      transferBtn.addEventListener("click", async () => {
+        let recipientAddress = document.getElementById(
+          "recipient-address-input"
+        ).value;
+        let amount = document.getElementById("amount-input").value;
+        await contract.methods
+          .transfer(recipientAddress, amount)
+          .send({ from: accounts[0] });
+        alert("Transfer successful!");
+      });
+    </script>
+  </body>
+</html>
